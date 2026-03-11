@@ -1,7 +1,8 @@
 let selectedFiles = [];
 let tracks = [];
+const CHECKBOX_KEY = 'selectedPlaylists';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const fileInput = document.getElementById('fileInput');
   const selectFilesBtn = document.getElementById('selectFilesBtn');
   const fileList = document.getElementById('fileList');
@@ -12,6 +13,32 @@ document.addEventListener('DOMContentLoaded', () => {
   const status = document.getElementById('status');
   const progressBar = document.getElementById('progressBar');
   const progressFill = document.getElementById('progressFill');
+
+  async function loadSavedFiles() {
+    const result = await chrome.storage.local.get(['savedFiles', CHECKBOX_KEY]);
+    if (result.savedFiles && result.savedFiles.length > 0) {
+      selectedFiles = result.savedFiles;
+      fileList.innerHTML = '';
+      
+      const savedCheckboxes = result[CHECKBOX_KEY] || {};
+      
+      for (const file of selectedFiles) {
+        const label = document.createElement('label');
+        label.className = 'checkbox-item';
+        label.innerHTML = `
+          <input type="checkbox" ${savedCheckboxes[file.name] !== false ? 'checked' : ''} data-filename="${file.name}">
+          <span>${file.name.replace('.csv', '')}</span>
+        `;
+        fileList.appendChild(label);
+      }
+
+      step2.classList.remove('hidden');
+      step3.classList.remove('hidden');
+      showStatus(`Loaded ${selectedFiles.length} files from last session.`, 'info');
+    }
+  }
+
+  await loadSavedFiles();
 
   selectFilesBtn.addEventListener('click', () => fileInput.click());
 
@@ -32,14 +59,24 @@ document.addEventListener('DOMContentLoaded', () => {
       fileList.appendChild(label);
     }
 
+    await chrome.storage.local.set({ savedFiles: selectedFiles });
+    
     step2.classList.remove('hidden');
-    showStatus('Files loaded. Now open YouTube Music and login.', 'info');
+    step3.classList.remove('hidden');
+    showStatus(`Loaded ${files.length} playlists.`, 'success');
+  });
+
+  fileList.addEventListener('change', async () => {
+    const checkboxes = {};
+    fileList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      checkboxes[cb.dataset.filename] = cb.checked;
+    });
+    await chrome.storage.local.set({ [CHECKBOX_KEY]: checkboxes });
   });
 
   openYTM.addEventListener('click', () => {
     chrome.tabs.create({ url: 'https://music.youtube.com' });
-    step3.classList.remove('hidden');
-    showStatus('Please login to YouTube Music, then click Start Import.', 'info');
+    showStatus('Open YouTube Music, then click Start Import.', 'info');
   });
 
   importBtn.addEventListener('click', async () => {
@@ -47,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedFileNames = Array.from(selectedCheckboxes).map(cb => cb.dataset.filename);
     
     if (selectedFileNames.length === 0) {
-      showStatus('Please select at least one playlist.', 'error');
+      showStatus('Select at least one playlist!', 'error');
       return;
     }
 
@@ -72,14 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       
       if (!tab.url.includes('music.youtube.com')) {
-        showStatus('Please open YouTube Music tab first!', 'error');
+        showStatus('Open YouTube Music tab first!', 'error');
         importBtn.disabled = false;
         return;
       }
 
       await processImport(tab.id);
       
-      showStatus(`Successfully imported ${tracks.length} tracks!`, 'success');
+      showStatus(`Done! Imported ${tracks.length} tracks.`, 'success');
     } catch (err) {
       console.error(err);
       showStatus('Error: ' + err.message, 'error');
