@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify to YTM Importer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      width: 400px;
+      min-height: 300px;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 16px;
+    }
+    
+    h1 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: #1db954;
+    }
+    
+    .section {
+      margin-bottom: 16px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #b3b3b3;
+    }
+    
+    select, button, input[type="text"] {
+      width: 100%;
+      padding:  border-radius10px;
+     : 6px;
+      border: none;
+      font-size: 14px;
+    }
+    
+    select {
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+    }
+    
+    button {
+      background: #1db954;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    button:hover {
+      background: #1ed760;
+    }
+    
+    button:disabled {
+      background: #333;
+      color: #666;
+      cursor: not-allowed;
+    }
+    
+    .secondary-btn {
+      background: #333;
+      color: #fff;
+    }
+    
+    .secondary-btn:hover {
+      background: #444;
+    }
+    
+    .status {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      display: none;
+    }
+    
+    .status.success {
+      display: block;
+      background: rgba(29, 185, 84, 0.2);
+      color: #1db954;
+    }
+    
+    .status.error {
+      display: block;
+      background: rgba(255, 59, 48, 0.2);
+      color: #ff3b30;
+    }
+    
+    .status.info {
+      display: block;
+      background: rgba(0, 122, 255, 0.2);
+      color: #007aff;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+      margin-top: 12px;
+      overflow: hidden;
+      display: none;
+    }
+    
+    .progress-bar.active {
+      display: block;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: #1db954;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    
+    .track-list {
+      max-height: 150px;
+      overflow-y: auto;
+      background: #222;
+      border-radius: 6px;
+      margin-top: 8px;
+      display: none;
+    }
+    
+    .track-list.active {
+      display: block;
+    }
+    
+    .track-item {
+      padding: 8px;
+      font-size: 12px;
+      border-bottom: 1px solid #333;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .track-item:last-child {
+      border-bottom: none;
+    }
+    
+    .track-name {
+      color: #fff;
+    }
+    
+    .track-status {
+      color: #b3b3b3;
+      font-size: 10px;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      background: #222;
+      padding: 8px;
+      border-radius: 6px;
+    }
+    
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    
+    .checkbox-item input {
+      width: auto;
+    }
+    
+    .checkbox-item span {
+      font-size: 14px;
+    }
+    
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎵 Spotify → YouTube Music</h1>
+  
+  <div id="step1" class="section">
+    <label>1. Select CSV files from Exportify:</label>
+    <input type="file" id="fileInput" multiple accept=".csv" style="display: none">
+    <button id="selectFilesBtn" class="secondary-btn">📁 Select CSV Files</button>
+    <div id="fileList" class="checkbox-group" style="margin-top: 8px;"></div>
+  </div>
+  
+  <div id="step2" class="section hidden">
+    <label>2. Open YouTube Music and login:</label>
+    <button id="openYTM" class="secondary-btn">🌐 Open YouTube Music</button>
+  </div>
+  
+  <div id="step3" class="section hidden">
+    <label>3. Import to YouTube Music:</label>
+    <button id="importBtn" class="secondary-btn">▶️ Start Import</button>
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+  
+  <div id="status" class="status"></div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
